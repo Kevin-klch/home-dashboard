@@ -27,3 +27,14 @@
     border-color: var(--color-gray-200, currentcolor);
   }
 }
+
+/* Waagerecht scrollbare Leisten ohne sichtbare Scrollbar – auf einem
+   Wandtablet wird gewischt, die Leiste selbst soll ruhig bleiben. */
+@utility no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}

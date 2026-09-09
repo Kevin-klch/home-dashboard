@@ -59,6 +59,7 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user);
+        $this->fakeOpenMeteo();
 
         $response = $this->get('/dashboard');
 

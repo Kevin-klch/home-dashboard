@@ -3,6 +3,8 @@
     'icon' => null,
     'accent' => 'sky',
     'action' => null,
+    // Sekunden fuer wire:poll – nur sinnvoll, wenn das Widget eine Livewire-Komponente ist.
+    'poll' => null,
 ])
 
 @php
@@ -18,10 +20,13 @@
     $accentClasses = $accents[$accent] ?? $accents['sky'];
 @endphp
 
-<section {{ $attributes->class([
+<section
+    @if ($poll) wire:poll.{{ $poll }}s @endif
+    {{ $attributes->class([
     'flex flex-col rounded-2xl border border-white/10 bg-white/5 p-5',
     'shadow-lg shadow-black/20 backdrop-blur-xl',
-]) }}>
+]) }}
+>
     @if ($title)
         <header class="mb-4 flex items-center gap-3">
             @if ($icon)

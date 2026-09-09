@@ -11,6 +11,13 @@ class DashboardTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->fakeOpenMeteo();
+    }
+
     public function test_guests_are_redirected_to_the_login_page(): void
     {
         $this->get('/dashboard')->assertRedirect('/login');
@@ -22,6 +29,7 @@ class DashboardTest extends TestCase
 
         $response->assertOk()
             ->assertSee('Wetter')
+            ->assertSee('data-day=', false)   // Wochenvorschau im Wetter-Widget
             ->assertSee('Einkaufsliste')
             ->assertSee('Notizen')
             ->assertSee('Termine')

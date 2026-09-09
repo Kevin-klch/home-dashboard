@@ -51,5 +51,37 @@
         @case('dots')
             <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
             @break
+        @case('cloud')
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z" />
+            @break
+        @case('cloud-sun')
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 2.5v1.4M2.9 6.6h1.4M4.1 3.7l1 1M9.9 3.7l-1 1M10 6.6a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            <g transform="translate(4.6 7.2) scale(0.72)" stroke-width="2.1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z" />
+            </g>
+            @break
+        @case('rain')
+            <g transform="translate(0 -2.6)">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z" />
+            </g>
+            <path stroke-linecap="round" d="M8.2 19.4 7.2 22M12.2 19.4l-1 2.6M16.2 19.4l-1 2.6" />
+            @break
+        @case('snow')
+            <g transform="translate(0 -2.6)">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z" />
+            </g>
+            <circle cx="7.8" cy="20.4" r="0.7" fill="currentColor" stroke="none" />
+            <circle cx="12" cy="21.4" r="0.7" fill="currentColor" stroke="none" />
+            <circle cx="16.2" cy="20.4" r="0.7" fill="currentColor" stroke="none" />
+            @break
+        @case('fog')
+            <g transform="translate(0 -2.6)">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z" />
+            </g>
+            <path stroke-linecap="round" d="M5.5 19.6h9M8 22h8" />
+            @break
+        @case('bolt')
+            <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+            @break
     @endswitch
 </svg>

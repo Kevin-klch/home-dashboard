@@ -40,18 +40,18 @@
         spaeter also aus der Datenbank steuerbar.
     --}}
     <div class="grid grid-cols-6 gap-5">
-        <x-widgets.clock         class="col-span-2" />
-        <x-widgets.weather       class="col-span-2" />
-        <x-widgets.wifi-qr       class="col-span-2" />
+        <x-widgets.clock          class="col-span-2" />
+        <livewire:widgets.weather class="col-span-4" />
 
-        <x-widgets.shopping-list class="col-span-2 row-span-2" />
-        <x-widgets.calendar      class="col-span-2" />
-        <x-widgets.tasks         class="col-span-2" />
+        <x-widgets.shopping-list  class="col-span-2" />
+        <x-widgets.calendar       class="col-span-2" />
+        <x-widgets.tasks          class="col-span-2" />
 
-        <x-widgets.notes         class="col-span-4" />
+        <x-widgets.wifi-qr        class="col-span-2" />
+        <x-widgets.notes          class="col-span-4" />
     </div>
 
     <p class="mt-6 text-center text-xs text-slate-600">
-        Vordesign mit Beispieldaten – noch keine echten Datenquellen angebunden.
+        Wetter live von Open-Meteo · die übrigen Kacheln zeigen noch Beispieldaten.
     </p>
 </x-dashboard-layout>
