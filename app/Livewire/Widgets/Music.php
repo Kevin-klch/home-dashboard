@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Widgets;
 
+use App\Livewire\Concerns\RendersAsTileOrPage;
 use App\Services\Music\ControlResult;
 use App\Services\Music\PlaybackStatus;
 use App\Services\Music\SpotifyClient;
@@ -11,14 +12,7 @@ use Livewire\Component;
 
 class Music extends Component
 {
-    private const VARIANTS = ['tile', 'page'];
-
-    // Reine Layout-Details vom Aufrufer – dürfen vom Client nicht kommen.
-    #[Locked]
-    public string $class = '';
-
-    #[Locked]
-    public string $variant = 'tile';
+    use RendersAsTileOrPage;
 
     /** Rückmeldung eines Befehls, etwa "kein aktives Gerät". */
     public ?string $notice = null;
@@ -34,14 +28,6 @@ class Music extends Component
      */
     #[Locked]
     public array $devices = [];
-
-    public function mount(string $class = '', string $variant = 'tile'): void
-    {
-        $this->class = $class;
-
-        // Der Wert landet im Ansichtsnamen, deshalb nur Bekanntes durchlassen.
-        $this->variant = in_array($variant, self::VARIANTS, true) ? $variant : 'tile';
-    }
 
     // ------------------------------------------------------------------
     // Steuerung
@@ -149,7 +135,7 @@ class Music extends Component
     {
         $playback = $spotify->playback();
 
-        return view("livewire.widgets.music-{$this->variant}", [
+        return view($this->variantView('music'), [
             'playback' => $playback,
             'track' => $playback->track,
             'canControl' => $spotify->canControl(),

@@ -162,4 +162,15 @@ class ShoppingListWidgetTest extends TestCase
         Livewire::test(ShoppingList::class, ['class' => 'col-span-2'])
             ->assertSeeHtml('col-span-2');
     }
+
+    public function test_the_page_variant_renders(): void
+    {
+        ShoppingItem::factory()->create(['name' => 'Milch']);
+
+        Livewire::test(ShoppingList::class, ['variant' => 'page'])
+            ->assertOk()
+            ->assertSee('Was fehlt?')
+            ->assertSee('Milch')
+            ->assertSee('offen');
+    }
 }

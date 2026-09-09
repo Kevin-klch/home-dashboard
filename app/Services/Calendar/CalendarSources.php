@@ -11,9 +11,13 @@ namespace App\Services\Calendar;
  */
 final class CalendarSources
 {
-    public function appointments(): CalendarProvider
+    /**
+     * @param  int|null  $daysAhead  überschreibt das Zeitfenster aus der Konfiguration
+     * @param  int|null  $maxEvents  überschreibt die Höchstzahl der Termine
+     */
+    public function appointments(?int $daysAhead = null, ?int $maxEvents = null): CalendarProvider
     {
-        return $this->make('calendar');
+        return $this->make('calendar', $daysAhead, $maxEvents);
     }
 
     public function birthdays(): CalendarProvider
@@ -21,15 +25,15 @@ final class CalendarSources
         return $this->make('birthdays');
     }
 
-    private function make(string $key): CalendarProvider
+    private function make(string $key, ?int $daysAhead = null, ?int $maxEvents = null): CalendarProvider
     {
         $config = config("dashboard.{$key}");
 
         return new IcsCalendarProvider(
             source: $config['ics_url'],
             timezone: $config['timezone'],
-            daysAhead: (int) $config['days_ahead'],
-            maxEvents: (int) $config['max_events'],
+            daysAhead: $daysAhead ?? (int) $config['days_ahead'],
+            maxEvents: $maxEvents ?? (int) $config['max_events'],
             cacheSeconds: (int) $config['cache_seconds'],
         );
     }

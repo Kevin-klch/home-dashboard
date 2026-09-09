@@ -2,26 +2,19 @@
 
 namespace App\Livewire\Widgets;
 
+use App\Livewire\Concerns\RendersAsTileOrPage;
 use App\Models\ShoppingItem;
 use Illuminate\View\View;
-use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class ShoppingList extends Component
 {
-    // Reines Layout-Detail vom Dashboard – darf vom Client nicht kommen.
-    #[Locked]
-    public string $class = '';
+    use RendersAsTileOrPage;
 
     public string $newItem = '';
 
     /** Kurze Rückmeldung, etwa bei einem doppelten Eintrag. */
     public ?string $notice = null;
-
-    public function mount(string $class = ''): void
-    {
-        $this->class = $class;
-    }
 
     public function add(): void
     {
@@ -81,7 +74,7 @@ class ShoppingList extends Component
     {
         $items = ShoppingItem::query()->inShoppingOrder()->get();
 
-        return view('livewire.widgets.shopping-list', [
+        return view($this->variantView('shopping-list'), [
             'items' => $items,
             'openCount' => $items->whereNull('completed_at')->count(),
             'doneCount' => $items->whereNotNull('completed_at')->count(),

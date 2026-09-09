@@ -245,7 +245,8 @@ class CalendarWidgetTest extends TestCase
     {
         config(['dashboard.calendar.days_ahead' => 400]);
 
-        Http::fake(['calendar.google.com/*' => Http::response(implode("
+        Http::fake(['calendar.google.com/*' => Http::response(implode("
+
 ", [
             'BEGIN:VCALENDAR',
             'VERSION:2.0',
@@ -264,5 +265,38 @@ class CalendarWidgetTest extends TestCase
         // Der nächste 27. Juni liegt 2027 – ohne Jahresangabe wäre "So 27.6."
         // auf dem Dashboard nicht einzuordnen.
         Livewire::test(Calendar::class)->assertSee('So 27.6.2027');
+    }
+
+    public function test_the_page_looks_further_ahead_than_the_tile(): void
+    {
+        // 20 Tage voraus: ausserhalb der 7 Tage der Kachel, innerhalb der 30 der Seite.
+        Http::fake(['calendar.google.com/*' => Http::response(implode("
+", [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Test//EN',
+            'BEGIN:VEVENT',
+            'UID:spaet@test',
+            'DTSTART;TZID=Europe/Berlin:20260929T100000',
+            'DTEND;TZID=Europe/Berlin:20260929T110000',
+            'SUMMARY:Spaeter Termin',
+            'END:VEVENT',
+            'END:VCALENDAR',
+            '',
+        ]))]);
+
+        Livewire::test(Calendar::class, ['variant' => 'tile'])->assertDontSee('Spaeter Termin');
+        Livewire::test(Calendar::class, ['variant' => 'page'])->assertSee('Spaeter Termin');
+    }
+
+    public function test_the_page_groups_events_under_day_headings(): void
+    {
+        $this->fakeFeed();
+
+        Livewire::test(Calendar::class, ['variant' => 'page'])
+            ->assertOk()
+            ->assertSee('Heute')
+            ->assertSee('Zahnarzt')
+            ->assertSeeHtml('data-event="2026-09-09"');
     }
 }

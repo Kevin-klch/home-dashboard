@@ -19,15 +19,13 @@ new class extends Component
 @php
     // Platzhalter-Navigation. Die Ziele zeigen bewusst noch alle auf das Dashboard –
     // eigene Routen kommen, sobald es die jeweiligen Seiten gibt.
-    // Punkte ohne eigene Route zeigen vorerst aufs Dashboard und werden nie
-    // als aktiv markiert – sie bekommen ihre Seite, sobald es sie gibt.
     $nav = [
         ['label' => 'Dashboard',     'icon' => 'squares',  'route' => 'dashboard'],
+        ['label' => 'Einkaufsliste', 'icon' => 'cart',     'route' => 'shopping'],
+        ['label' => 'Aufgaben',      'icon' => 'check',    'route' => 'tasks'],
+        ['label' => 'Kalender',      'icon' => 'calendar', 'route' => 'calendar'],
+        ['label' => 'Notizen',       'icon' => 'note',     'route' => 'notes'],
         ['label' => 'Musik',         'icon' => 'music',    'route' => 'music'],
-        ['label' => 'Einkaufsliste', 'icon' => 'cart',     'route' => null],
-        ['label' => 'Notizen',       'icon' => 'note',     'route' => null],
-        ['label' => 'Kalender',      'icon' => 'calendar', 'route' => null],
-        ['label' => 'Aufgaben',      'icon' => 'check',    'route' => null],
     ];
 
     $comingSoon = [
@@ -51,9 +49,9 @@ new class extends Component
     {{-- Hauptnavigation --}}
     <nav class="flex-1 space-y-1 px-3">
         @foreach ($nav as $item)
-            @php $active = $item['route'] !== null && request()->routeIs($item['route']); @endphp
+            @php $active = request()->routeIs($item['route']); @endphp
 
-            <a href="{{ route($item['route'] ?? 'dashboard') }}" wire:navigate
+            <a href="{{ route($item['route']) }}" wire:navigate
                @class([
                    'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition',
                    'bg-white/10 font-medium text-white shadow-xs' => $active,
