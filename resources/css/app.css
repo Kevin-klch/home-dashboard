@@ -38,3 +38,16 @@
         display: none;
     }
 }
+
+/* Dauerbetrieb auf dem Tablet: kein Überziehen der Seite, kein Kontextmenü
+   beim Langdrücken, keine blauen Aufblitzer beim Antippen. */
+@layer base {
+    html {
+        overscroll-behavior: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        -webkit-touch-callout: none;
+    }
+}

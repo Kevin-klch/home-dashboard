@@ -9,6 +9,9 @@
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="theme-color" content="#020617">
+        <link rel="manifest" href="/site.webmanifest">
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 
         <title>{{ $title ?? config('app.name') }}</title>
 

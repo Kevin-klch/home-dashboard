@@ -19,7 +19,9 @@ class LoginForm extends Form
     public string $password = '';
 
     #[Validate('boolean')]
-    public bool $remember = false;
+    // Vorbelegt: das Dashboard haengt dauerhaft an der Wand und soll sich
+    // nicht alle paar Stunden abmelden.
+    public bool $remember = true;
 
     /**
      * Attempt to authenticate the request's credentials.

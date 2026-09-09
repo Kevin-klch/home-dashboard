@@ -1,58 +1,111 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Home Dashboard
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Persönliches Dashboard für ein Tablet an der Wand: Wetter, Termine, Geburtstage,
+Musik, Einkaufsliste, Aufgaben, Notizen und der WLAN-Zugang als QR-Code.
 
-## About Laravel
+Laravel 13, Livewire, Tailwind CSS 4, SQLite.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Einrichten
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+npm run build
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Konfiguration
 
-## Contributing
+Alle Zugangsdaten gehören in die `.env` – **nicht** in die `.env.example`, die
+liegt im Repository.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Schlüssel | Wofür |
+|---|---|
+| `WEATHER_LOCATION`, `WEATHER_LATITUDE`, `WEATHER_LONGITUDE` | Ort für Open-Meteo, kein API-Key nötig |
+| `WEATHER_FORECAST_HOURS`, `WEATHER_VISIBLE_HOURS`, `WEATHER_FORECAST_DAYS` | Umfang der Wettervorhersage |
+| `CALENDAR_ICS_URL` | geheime iCal-Adresse des Termin-Kalenders |
+| `BIRTHDAYS_ICS_URL` | eigener Geburtstags-Kalender (nicht Googles Systemkalender) |
+| `WIFI_SSID`, `WIFI_PASSWORD`, `WIFI_ENCRYPTION` | Inhalt des WLAN-QR-Codes |
+| `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` | aus dem Spotify Developer Dashboard |
 
-## Code of Conduct
+### Kalender
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Google Kalender → Einstellungen und Freigabe → **Kalender integrieren** →
+*Geheime Adresse im iCal-Format*. Wer diese Adresse hat, kann den Kalender
+lesen. Ein lokaler Dateipfad oder eine `webcal://`-Adresse funktionieren
+ebenfalls.
 
-## Security Vulnerabilities
+Für Geburtstage braucht es einen **eigenen, normalen Kalender**. Googles
+automatischer Kalender „Geburtstage" ist ein Systemkalender und hat keine
+iCal-Adresse.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Spotify
 
-## License
+Weiterleitungs-URL im Spotify-Dashboard exakt so eintragen:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```
+http://127.0.0.1:8000/spotify/callback
+```
+
+`localhost` ist seit April 2025 nicht mehr erlaubt. Das Dashboard muss beim
+Verbinden auch über `127.0.0.1` aufgerufen werden, sonst passt das
+Sitzungs-Cookie nicht zur Rückleitung.
+
+Steuerung und Gerätewechsel setzen Spotify Premium voraus.
+
+## Dauerbetrieb auf dem iPad
+
+**Zum Homescreen hinzufügen.** In Safari über *Teilen → Zum Home-Bildschirm*.
+Dank Manifest und Icon startet das Dashboard dann ohne Browserleisten im
+Vollbild.
+
+**Automatische Sperre abschalten.** *Einstellungen → Anzeige & Helligkeit →
+Automatische Sperre → Nie*. Die Wake-Lock-API im Dashboard hält den Bildschirm
+zusätzlich wach, funktioniert aber nur über HTTPS oder localhost – über eine
+einfache `http`-Adresse im Heimnetz greift sie nicht.
+
+**Geführter Zugriff** (*Einstellungen → Bedienungshilfen*) sperrt das Tablet auf
+diese eine App, falls Gäste daran vorbeikommen.
+
+**Angemeldet bleiben.** Die Sitzung ist auf 30 Tage gesetzt und „Angemeldet
+bleiben" beim Login vorbelegt – damit steht morgens kein Anmeldebildschirm an
+der Wand. Bricht die Verbindung ab, zeigt das Dashboard einen Hinweis und lädt
+sich neu, sobald der Server wieder antwortet.
+
+**Vor dem echten Dauerbetrieb umstellen:**
+
+```
+APP_ENV=production
+APP_DEBUG=false
+```
+
+Mit `APP_DEBUG=true` zeigt jede Fehlerseite vollständige Stacktraces samt
+Konfigurationswerten. Solange nur im Heimnetz entwickelt wird, ist das in
+Ordnung – an der Wand nicht.
+
+`php artisan serve` ist der Entwicklungsserver und für Dauerbetrieb nicht
+gedacht. Für den Alltag gehört die Anwendung hinter einen richtigen Webserver
+oder auf ein Gerät, das ohnehin durchläuft.
+
+## Tests
+
+```bash
+php artisan test
+```
+
+Die Testsuite setzt keine echten HTTP-Aufrufe ab: `Http::preventStrayRequests()`
+in `tests/TestCase.php` lässt jeden Test scheitern, der eine externe Quelle
+nicht faked.
+
+## Icons
+
+`public/icons/` wird von `resources/icons/make-icons.php` erzeugt. Das Skript
+schreibt die PNG-Struktur von Hand, weil auf dem Entwicklungsrechner weder `gd`
+noch ImageMagick vorhanden sind:
+
+```bash
+php resources/icons/make-icons.php
+```
