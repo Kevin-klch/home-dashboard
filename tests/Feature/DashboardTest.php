@@ -30,6 +30,7 @@ class DashboardTest extends TestCase
         $response->assertOk()
             ->assertSee('Wetter')
             ->assertSee('data-day=', false)   // Wochenvorschau im Wetter-Widget
+            ->assertSee('Geburtstage')
             ->assertSee('Einkaufsliste')
             ->assertSee('Notizen')
             ->assertSee('Termine')

@@ -39,4 +39,37 @@ return [
         'poll_seconds' => (int) env('WEATHER_POLL_SECONDS', 900),
     ],
 
+    'calendar' => [
+
+        // Geheime iCal-Adresse des Termin-Kalenders. In Google Kalender unter
+        // Einstellungen → Kalender → "Geheime Adresse im iCal-Format".
+        // Ein lokaler Dateipfad wird ebenfalls akzeptiert.
+        // Wer diese Adresse hat, kann den Kalender lesen – sie gehört in die
+        // .env und nicht ins Repository.
+        'ics_url' => env('CALENDAR_ICS_URL'),
+
+        'timezone' => env('CALENDAR_TIMEZONE', 'Europe/Berlin'),
+        'days_ahead' => (int) env('CALENDAR_DAYS_AHEAD', 7),
+        'max_events' => (int) env('CALENDAR_MAX_EVENTS', 6),
+        'cache_seconds' => (int) env('CALENDAR_CACHE_SECONDS', 900),
+        'poll_seconds' => (int) env('CALENDAR_POLL_SECONDS', 900),
+    ],
+
+    'birthdays' => [
+
+        // Eigener Kalender, nicht der automatische "Geburtstage"-Kalender von
+        // Google – der ist ein Systemkalender und hat keine iCal-Adresse.
+        // Also einen normalen zweiten Kalender anlegen und dort ganztägige,
+        // jährlich wiederkehrende Termine mit dem Namen als Titel eintragen.
+        'ics_url' => env('BIRTHDAYS_ICS_URL'),
+
+        'timezone' => env('BIRTHDAYS_TIMEZONE', 'Europe/Berlin'),
+
+        // Ein volles Jahr, damit immer ein nächster Geburtstag gefunden wird.
+        'days_ahead' => (int) env('BIRTHDAYS_DAYS_AHEAD', 366),
+        'max_events' => (int) env('BIRTHDAYS_MAX_EVENTS', 12),
+        'cache_seconds' => (int) env('BIRTHDAYS_CACHE_SECONDS', 3600),
+        'poll_seconds' => (int) env('BIRTHDAYS_POLL_SECONDS', 3600),
+    ],
+
 ];
