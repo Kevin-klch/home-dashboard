@@ -86,5 +86,41 @@
         @case('cake')
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12" />
             @break
+        @case('play')
+            <path fill="currentColor" stroke="none" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 0 1 0 1.971l-11.54 6.347a1.125 1.125 0 0 1-1.667-.985V5.653Z" />
+            @break
+        @case('pause')
+            <path fill="currentColor" stroke="none" d="M6.75 5.25A.75.75 0 0 1 7.5 4.5H9a.75.75 0 0 1 .75.75v13.5A.75.75 0 0 1 9 19.5H7.5a.75.75 0 0 1-.75-.75V5.25Zm7.5 0A.75.75 0 0 1 15 4.5h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H15a.75.75 0 0 1-.75-.75V5.25Z" />
+            @break
+        @case('skip-next')
+            <path fill="currentColor" stroke="none" d="M4.5 5.653c0-.856.917-1.398 1.667-.986l9.54 5.348a1.125 1.125 0 0 1 0 1.971l-9.54 5.347A1.125 1.125 0 0 1 4.5 16.347V5.653Z" />
+            <rect fill="currentColor" stroke="none" x="17.25" y="4.5" width="2.25" height="15" rx="1.125" />
+            @break
+        @case('skip-previous')
+            <path fill="currentColor" stroke="none" d="M19.5 5.653c0-.856-.917-1.398-1.667-.986l-9.54 5.348a1.125 1.125 0 0 0 0 1.971l9.54 5.347a1.125 1.125 0 0 0 1.667-.986V5.653Z" />
+            <rect fill="currentColor" stroke="none" x="4.5" y="4.5" width="2.25" height="15" rx="1.125" />
+            @break
+        @case('shuffle')
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 4.5 21 9m0 0-4.5 4.5M21 9h-3.75a5.25 5.25 0 0 0-4.2 2.1L10.2 14.4A5.25 5.25 0 0 1 6 16.5H3M16.5 19.5 21 15m0 0-4.5-4.5M21 15h-3.75a5.25 5.25 0 0 1-3.6-1.425M3 7.5h3a5.25 5.25 0 0 1 3.6 1.425" />
+            @break
+        @case('repeat')
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.75 20.25 7.5m0 0-3.75 3.75M20.25 7.5H6.75A2.25 2.25 0 0 0 4.5 9.75v1.5m3 9L3.75 16.5m0 0 3.75-3.75M3.75 16.5h13.5a2.25 2.25 0 0 0 2.25-2.25v-1.5" />
+            @break
+        @case('repeat-one')
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.75 20.25 7.5m0 0-3.75 3.75M20.25 7.5H6.75A2.25 2.25 0 0 0 4.5 9.75v1.5m3 9L3.75 16.5m0 0 3.75-3.75M3.75 16.5h13.5a2.25 2.25 0 0 0 2.25-2.25v-1.5" />
+            <text x="11.6" y="15" font-size="9" font-weight="600" text-anchor="middle" fill="currentColor" stroke="none">1</text>
+            @break
+        @case('volume')
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
+            @break
+        @case('device')
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
+            @break
+        @case('phone')
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+            @break
+        @case('check-small')
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+            @break
     @endswitch
 </svg>

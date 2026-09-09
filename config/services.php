@@ -14,6 +14,15 @@ return [
     |
     */
 
+    'spotify' => [
+        // Aus dem Spotify Developer Dashboard. Die Weiterleitungs-URL muss dort
+        // identisch hinterlegt sein – und "localhost" ist seit April 2025
+        // verboten, es muss die Loopback-Adresse 127.0.0.1 sein.
+        'client_id' => env('SPOTIFY_CLIENT_ID'),
+        'client_secret' => env('SPOTIFY_CLIENT_SECRET'),
+        'redirect' => env('SPOTIFY_REDIRECT_URI', 'http://127.0.0.1:8000/spotify/callback'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

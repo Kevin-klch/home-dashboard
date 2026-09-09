@@ -29,7 +29,7 @@
                     <div class="absolute -bottom-40 right-1/4 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl"></div>
                 </div>
 
-                <div class="px-8 py-7">
+                <div class="flex min-h-full flex-col px-8 py-7">
                     {{ $slot }}
                 </div>
             </main>

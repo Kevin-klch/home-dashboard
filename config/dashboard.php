@@ -72,6 +72,16 @@ return [
         'poll_seconds' => (int) env('BIRTHDAYS_POLL_SECONDS', 3600),
     ],
 
+    'music' => [
+
+        // Wie oft die Anzeige nachfragt. Bei 10 Sekunden sind das drei
+        // Anfragen je 30-Sekunden-Fenster – weit unter Spotifys Limit.
+        'poll_seconds' => (int) env('MUSIC_POLL_SECONDS', 10),
+
+        // Kurzer Puffer, damit Kachel und Seite nebeneinander nicht doppelt fragen.
+        'cache_seconds' => (int) env('MUSIC_CACHE_SECONDS', 5),
+    ],
+
     'wifi' => [
 
         // Zugangsdaten für den QR-Code an der Wand. Sie stehen nur in der

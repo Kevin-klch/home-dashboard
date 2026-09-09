@@ -45,10 +45,10 @@
 
         <livewire:widgets.calendar  class="col-span-2" />
         <livewire:widgets.birthdays class="col-span-2" />
-        <x-widgets.shopping-list    class="col-span-2" />
+        <livewire:widgets.music     class="col-span-2" />
 
+        <x-widgets.shopping-list  class="col-span-2" />
         <x-widgets.tasks          class="col-span-2" />
-        <x-widgets.notes          class="col-span-2" />
         <livewire:widgets.wifi-qr class="col-span-2" />
     </div>
 

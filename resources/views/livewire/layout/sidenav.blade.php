@@ -19,17 +19,19 @@ new class extends Component
 @php
     // Platzhalter-Navigation. Die Ziele zeigen bewusst noch alle auf das Dashboard –
     // eigene Routen kommen, sobald es die jeweiligen Seiten gibt.
+    // Punkte ohne eigene Route zeigen vorerst aufs Dashboard und werden nie
+    // als aktiv markiert – sie bekommen ihre Seite, sobald es sie gibt.
     $nav = [
-        ['label' => 'Dashboard',     'icon' => 'squares',  'active' => true],
-        ['label' => 'Einkaufsliste', 'icon' => 'cart',     'active' => false],
-        ['label' => 'Notizen',       'icon' => 'note',     'active' => false],
-        ['label' => 'Kalender',      'icon' => 'calendar', 'active' => false],
-        ['label' => 'Aufgaben',      'icon' => 'check',    'active' => false],
+        ['label' => 'Dashboard',     'icon' => 'squares',  'route' => 'dashboard'],
+        ['label' => 'Musik',         'icon' => 'music',    'route' => 'music'],
+        ['label' => 'Einkaufsliste', 'icon' => 'cart',     'route' => null],
+        ['label' => 'Notizen',       'icon' => 'note',     'route' => null],
+        ['label' => 'Kalender',      'icon' => 'calendar', 'route' => null],
+        ['label' => 'Aufgaben',      'icon' => 'check',    'route' => null],
     ];
 
     $comingSoon = [
         ['label' => 'Smart Home', 'icon' => 'home'],
-        ['label' => 'Musik',      'icon' => 'music'],
         ['label' => 'Klima',      'icon' => 'thermometer'],
     ];
 @endphp
@@ -49,16 +51,18 @@ new class extends Component
     {{-- Hauptnavigation --}}
     <nav class="flex-1 space-y-1 px-3">
         @foreach ($nav as $item)
-            <a href="{{ route('dashboard') }}" wire:navigate
+            @php $active = $item['route'] !== null && request()->routeIs($item['route']); @endphp
+
+            <a href="{{ route($item['route'] ?? 'dashboard') }}" wire:navigate
                @class([
                    'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition',
-                   'bg-white/10 font-medium text-white shadow-xs' => $item['active'],
-                   'text-slate-400 hover:bg-white/5 hover:text-slate-100' => ! $item['active'],
+                   'bg-white/10 font-medium text-white shadow-xs' => $active,
+                   'text-slate-400 hover:bg-white/5 hover:text-slate-100' => ! $active,
                ])
-               @if ($item['active']) aria-current="page" @endif>
+               @if ($active) aria-current="page" @endif>
                 <x-dash.icon :name="$item['icon']" class="size-5 shrink-0" />
                 <span>{{ $item['label'] }}</span>
-                @if ($item['active'])
+                @if ($active)
                     <span class="ml-auto size-1.5 rounded-full bg-sky-400"></span>
                 @endif
             </a>
