@@ -72,4 +72,18 @@ return [
         'poll_seconds' => (int) env('BIRTHDAYS_POLL_SECONDS', 3600),
     ],
 
+    'wifi' => [
+
+        // Zugangsdaten für den QR-Code an der Wand. Sie stehen nur in der
+        // .env – im Repository landen sie nicht.
+        'ssid' => env('WIFI_SSID'),
+        'password' => env('WIFI_PASSWORD'),
+
+        // WPA (deckt auch WPA2 und WPA3 ab), WEP oder none.
+        'encryption' => env('WIFI_ENCRYPTION', 'WPA'),
+
+        // Nur nötig, wenn der Netzname nicht gesendet wird.
+        'hidden' => (bool) env('WIFI_HIDDEN', false),
+    ],
+
 ];

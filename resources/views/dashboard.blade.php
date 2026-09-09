@@ -49,7 +49,7 @@
 
         <x-widgets.tasks          class="col-span-2" />
         <x-widgets.notes          class="col-span-2" />
-        <x-widgets.wifi-qr        class="col-span-2" />
+        <livewire:widgets.wifi-qr class="col-span-2" />
     </div>
 
     <p class="mt-6 text-center text-xs text-slate-600">
