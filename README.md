@@ -32,6 +32,7 @@ liegt im Repository.
 | `WIFI_SSID`, `WIFI_PASSWORD`, `WIFI_ENCRYPTION` | Inhalt des WLAN-QR-Codes |
 | `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` | aus dem Spotify Developer Dashboard |
 | `PIN_LENGTH`, `PIN_ATTEMPTS` | Stellen der Anmelde-PIN und Fehlversuche bis zur Sperre |
+| `NIGHT_MODE`, `NIGHT_FROM`, `NIGHT_TO`, `NIGHT_DIM` | Nachtabsenkung des Bildschirms |
 
 ### Kalender
 
@@ -84,6 +85,13 @@ einfache `http`-Adresse im Heimnetz greift sie nicht.
 
 **Geführter Zugriff** (*Einstellungen → Bedienungshilfen*) sperrt das Tablet auf
 diese eine App, falls Gäste daran vorbeikommen.
+
+**Nachtabsenkung.** Zwischen `NIGHT_FROM` und `NIGHT_TO` legt sich eine
+dunkle Ebene über das Dashboard – standardmäßig 22:00 bis 06:30 bei 78 %
+Abdunkelung. Eine Berührung hellt für eine Minute auf; die erste Berührung
+wird dabei abgefangen, damit man nicht versehentlich etwas antippt. Der
+Mond-Knopf unten in der Seitenleiste schaltet von Hand um, bis die nächste
+Zeitgrenze erreicht ist.
 
 **Anmeldung per PIN.** Auf `/login` steht ein Ziffernblock; die achtstellige
 PIN legst du im Profil fest. Nach mehreren Fehlversuchen sperrt die Anmeldung

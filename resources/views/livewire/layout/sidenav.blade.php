@@ -90,6 +90,13 @@ new class extends Component
                 <p class="truncate text-sm text-slate-200">{{ auth()->user()?->name ?? 'Gast' }}</p>
                 <a href="{{ route('profile') }}" wire:navigate class="text-xs text-slate-500 hover:text-slate-300">Profil</a>
             </div>
+            <button type="button" title="Nachtmodus umschalten"
+                    x-on:click="window.dispatchEvent(new CustomEvent('nachtmodus-umschalten'))"
+                    data-nachtmodus
+                    class="rounded-lg p-1.5 text-slate-500 transition hover:bg-white/5 hover:text-slate-200">
+                <x-dash.icon name="moon" class="size-5" />
+            </button>
+
             <button type="button" wire:click="logout" title="Abmelden"
                     class="rounded-lg p-1.5 text-slate-500 transition hover:bg-white/5 hover:text-slate-200">
                 <x-dash.icon name="logout" class="size-5" />

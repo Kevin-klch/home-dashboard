@@ -12,6 +12,21 @@ return [
     |
     */
 
+    'night' => [
+
+        // Nachtabsenkung: ab wann und bis wann der Bildschirm gedimmt wird.
+        // Der Zeitraum darf über Mitternacht laufen.
+        'enabled' => (bool) env('NIGHT_MODE', true),
+        'from' => env('NIGHT_FROM', '22:00'),
+        'to' => env('NIGHT_TO', '06:30'),
+
+        // Stärke der Absenkung: 0 lässt alles hell, 0.9 ist fast schwarz.
+        'dim' => (float) env('NIGHT_DIM', 0.78),
+
+        // Wie lange eine Berührung wieder aufhellt.
+        'wake_seconds' => (int) env('NIGHT_WAKE_SECONDS', 60),
+    ],
+
     'security' => [
 
         // Stellen der PIN fürs Wandtablet.

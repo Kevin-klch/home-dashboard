@@ -22,7 +22,25 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="h-full overflow-hidden bg-slate-950 font-sans text-slate-100 antialiased selection:bg-sky-500/30">
-        <div class="flex h-full">
+        @php $nacht = app(\App\Services\Display\NightMode::class)->toArray(); @endphp
+
+        <div class="flex h-full"
+             x-data="nachtmodus(@js($nacht))"
+             x-on:nachtmodus-umschalten.window="umschalten()"
+             x-on:pointerdown="aufwecken()">
+
+            {{--
+                Abdunkelung als eigene Ebene statt als Filter: billiger für die
+                Grafik und blockiert im gedimmten Zustand die erste Berührung,
+                damit man beim Aufwecken nicht versehentlich etwas antippt.
+            --}}
+            <div class="fixed inset-0 z-50 bg-black transition-opacity duration-700"
+                 data-nachtschicht
+                 :style="`opacity: ${staerke}`"
+                 :class="abgedunkelt ? 'cursor-pointer' : 'pointer-events-none'"
+                 x-on:pointerdown.stop="aufwecken()"
+                 aria-hidden="true"></div>
+
             <livewire:layout.sidenav />
 
             <main class="relative flex-1 overflow-y-auto">

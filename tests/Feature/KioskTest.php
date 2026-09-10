@@ -85,4 +85,39 @@ class KioskTest extends TestCase
             $this->assertFileExists(public_path(ltrim($icon['src'], '/')));
         }
     }
+
+    public function test_the_dashboard_carries_the_night_dimming(): void
+    {
+        $this->fakeDashboardSources();
+
+        $html = $this->actingAs(User::factory()->create())->get(route('dashboard'))->getContent();
+
+        $this->assertStringContainsString('data-nachtschicht', $html);
+        $this->assertStringContainsString('nachtmodus(', $html);
+        $this->assertStringContainsString('data-nachtmodus', $html);   // Umschalter
+    }
+
+    public function test_the_dimming_is_already_on_when_the_page_loads_at_night(): void
+    {
+        // Sonst blitzt das Tablet nachts beim Laden kurz hell auf.
+        $this->travelTo(\Carbon\CarbonImmutable::parse('2026-09-10 23:30'));
+        $this->fakeDashboardSources();
+
+        config(['dashboard.night.enabled' => true, 'dashboard.night.from' => '22:00', 'dashboard.night.to' => '06:30']);
+
+        $html = $this->actingAs(User::factory()->create())->get(route('dashboard'))->getContent();
+
+        // @js() rendert JSON.parse('…') mit \u0022-Escapes statt roher Anfuehrungszeichen.
+        $this->assertStringContainsString('night\u0022:true', $html);
+    }
+
+    public function test_it_stays_bright_during_the_day(): void
+    {
+        $this->travelTo(\Carbon\CarbonImmutable::parse('2026-09-10 14:00'));
+        $this->fakeDashboardSources();
+
+        $html = $this->actingAs(User::factory()->create())->get(route('dashboard'))->getContent();
+
+        $this->assertStringContainsString('night\u0022:false', $html);
+    }
 }

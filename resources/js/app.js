@@ -118,3 +118,89 @@ document.addEventListener('livewire:init', () => {
         })
     })
 })
+
+// ---------------------------------------------------------------------------
+// Nachtabsenkung
+// ---------------------------------------------------------------------------
+//
+// Der Server berechnet beim Ausliefern, ob gerade Nacht ist – so blitzt beim
+// Laden nichts hell auf. Hier drin wird nur minütlich nachgeschaut und der
+// Übergang gefahren.
+
+document.addEventListener('alpine:init', () => {
+    window.Alpine.data('nachtmodus', (config) => ({
+        nacht: config.night,
+
+        /** null = automatisch, true/false = von Hand bis zur nächsten Grenze */
+        manuell: null,
+
+        /** Läuft die Aufhellung nach einer Berührung? */
+        wach: false,
+
+        wachTimer: null,
+
+        init() {
+            if (! config.enabled) return
+
+            // Jede Minute prüfen, ob die Grenze überschritten wurde.
+            setInterval(() => this.pruefen(), 30000)
+        },
+
+        pruefen() {
+            const jetzt = this.istNacht()
+
+            // Eine überschrittene Grenze hebt die Handschaltung wieder auf.
+            if (jetzt !== this.nacht) {
+                this.nacht = jetzt
+                this.manuell = null
+            }
+        },
+
+        istNacht() {
+            const d = new Date()
+            const jetzt = d.getHours() * 60 + d.getMinutes()
+            const von = this.minuten(config.from)
+            const bis = this.minuten(config.to)
+
+            if (von === bis) return false
+
+            return von > bis ? (jetzt >= von || jetzt < bis) : (jetzt >= von && jetzt < bis)
+        },
+
+        minuten(zeit) {
+            const [h, m] = String(zeit).split(':')
+
+            return Number(h) * 60 + Number(m)
+        },
+
+        /** Soll gerade abgedunkelt sein? */
+        get abgedunkelt() {
+            if (! config.enabled) return false
+            if (this.wach) return false
+
+            return this.manuell ?? this.nacht
+        },
+
+        get staerke() {
+            return this.abgedunkelt ? config.dim : 0
+        },
+
+        /** Berührung: für eine Weile aufhellen. */
+        aufwecken() {
+            if (! this.abgedunkelt && ! this.wach) return
+
+            this.wach = true
+            clearTimeout(this.wachTimer)
+
+            this.wachTimer = setTimeout(() => {
+                this.wach = false
+            }, config.wakeSeconds * 1000)
+        },
+
+        umschalten() {
+            this.manuell = ! (this.manuell ?? this.nacht)
+            this.wach = false
+            clearTimeout(this.wachTimer)
+        },
+    }))
+})
