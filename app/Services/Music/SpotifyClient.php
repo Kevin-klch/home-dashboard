@@ -3,6 +3,7 @@
 namespace App\Services\Music;
 
 use App\Models\SpotifyToken;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
@@ -28,10 +29,21 @@ final class SpotifyClient implements NowPlayingProvider
 
     private const CACHE_KEY = 'dashboard.music.playback';
 
+    private const LAST_KEY = 'dashboard.music.last-track';
+
+    private const HISTORY_KEY = 'dashboard.music.history';
+
+    /** Kurz genug, dass ein Titelwechsel schnell auftaucht. */
+    private const HISTORY_TTL = 20;
+
     /** Ohne diesen Scope lässt sich nur zuschauen. */
     public const CONTROL_SCOPE = 'user-modify-playback-state';
 
-    public const SCOPES = 'user-read-playback-state user-read-currently-playing '.self::CONTROL_SCOPE;
+    /** Für den Verlauf der zuletzt gespielten Titel. */
+    public const HISTORY_SCOPE = 'user-read-recently-played';
+
+    public const SCOPES = 'user-read-playback-state user-read-currently-playing '
+        .self::CONTROL_SCOPE.' '.self::HISTORY_SCOPE;
 
     public function isConfigured(): bool
     {
@@ -52,9 +64,19 @@ final class SpotifyClient implements NowPlayingProvider
      */
     public function canControl(): bool
     {
+        return $this->hasScope(self::CONTROL_SCOPE);
+    }
+
+    public function canSeeHistory(): bool
+    {
+        return $this->hasScope(self::HISTORY_SCOPE);
+    }
+
+    private function hasScope(string $scope): bool
+    {
         $token = SpotifyToken::current();
 
-        return $token !== null && Str::contains((string) $token->scope, self::CONTROL_SCOPE);
+        return $token !== null && Str::contains((string) $token->scope, $scope);
     }
 
     // ------------------------------------------------------------------
@@ -108,6 +130,9 @@ final class SpotifyClient implements NowPlayingProvider
     {
         SpotifyToken::query()->delete();
         $this->forget();
+        $this->forgetHistory();
+
+        Cache::forget(self::LAST_KEY);
     }
 
     // ------------------------------------------------------------------
@@ -133,7 +158,7 @@ final class SpotifyClient implements NowPlayingProvider
         );
 
         return match ($result['state'] ?? 'unavailable') {
-            'idle' => Playback::idle(),
+            'idle' => Playback::idle($this->lastTrack()),
             'playing' => $this->toPlayback($result['body'] ?? []),
             default => Playback::unavailable(),
         };
@@ -189,15 +214,40 @@ final class SpotifyClient implements NowPlayingProvider
      */
     private function toPlayback(array $body): Playback
     {
+        $track = $this->toNowPlaying($body);
+
+        if ($track === null) {
+            return Playback::idle($this->lastTrack());
+        }
+
+        // Für die Stille zwischendurch – etwa direkt nach einem Gerätewechsel.
+        Cache::put(self::LAST_KEY, $body, now()->addHours(12));
+
+        return Playback::playing($track);
+    }
+
+    /** Der zuletzt gesehene Titel, falls einer bekannt ist. */
+    private function lastTrack(): ?NowPlaying
+    {
+        $body = Cache::get(self::LAST_KEY);
+
+        return is_array($body) ? $this->toNowPlaying($body) : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $body
+     */
+    private function toNowPlaying(array $body): ?NowPlaying
+    {
         $item = $body['item'] ?? null;
 
         if (! is_array($item)) {
-            return Playback::idle();
+            return null;
         }
 
         $isPodcast = ($item['type'] ?? 'track') === 'episode';
 
-        return Playback::playing(new NowPlaying(
+        return new NowPlaying(
             title: (string) ($item['name'] ?? 'Unbekannt'),
             artist: $this->performer($item, $isPodcast),
             album: $isPodcast
@@ -215,7 +265,7 @@ final class SpotifyClient implements NowPlayingProvider
             volumePercent: isset($body['device']['volume_percent'])
                 ? (int) $body['device']['volume_percent']
                 : null,
-        ));
+        );
     }
 
     // ------------------------------------------------------------------
@@ -305,6 +355,121 @@ final class SpotifyClient implements NowPlayingProvider
         )));
     }
 
+    /**
+     * Die zuletzt gespielten Titel.
+     *
+     * Kommt direkt von Spotify und ist damit vollständig – auch was auf dem
+     * Handy unterwegs lief. Der gerade laufende Titel ist nicht enthalten,
+     * Podcast-Folgen liefert Spotify hier gar nicht.
+     *
+     * @return list<PlayedTrack>|null
+     */
+    public function recentlyPlayed(int $limit = 15): ?array
+    {
+        if (! $this->canSeeHistory()) {
+            return null;
+        }
+
+        $limit = max(1, min(50, $limit));
+
+        // Immer das Maximum holen und hier kürzen: ein Schlüssel, der sich
+        // nach jedem Befehl gezielt verwerfen lässt.
+        $items = Cache::remember(
+            self::HISTORY_KEY,
+            self::HISTORY_TTL,
+            fn () => $this->fetchRecentlyPlayed(50),
+        );
+
+        if (! is_array($items)) {
+            return null;
+        }
+
+        $tracks = array_values(array_filter(array_map(
+            fn (array $entry) => $this->toPlayedTrack($entry),
+            $items
+        )));
+
+        return array_slice($this->collapseRepeats($tracks), 0, $limit);
+    }
+
+    /**
+     * Denselben Titel mehrfach hintereinander zu einer Zeile zusammenfassen.
+     *
+     * Jedes Antippen von "weiter" hinterlässt einen eigenen Eintrag – nach
+     * ein paar Sprüngen steht derselbe Titel sonst fünfmal untereinander.
+     *
+     * @param  list<PlayedTrack>  $tracks
+     * @return list<PlayedTrack>
+     */
+    private function collapseRepeats(array $tracks): array
+    {
+        $kept = [];
+
+        foreach ($tracks as $track) {
+            $previous = end($kept) ?: null;
+
+            if ($previous !== null
+                && $previous->title === $track->title
+                && $previous->artist === $track->artist) {
+                continue;
+            }
+
+            $kept[] = $track;
+        }
+
+        return $kept;
+    }
+
+    /**
+     * @return list<array<string, mixed>>|null
+     */
+    private function fetchRecentlyPlayed(int $limit): ?array
+    {
+        $request = $this->api();
+
+        if ($request === null) {
+            return null;
+        }
+
+        try {
+            $response = $request->get(self::API_URL.'/me/player/recently-played', ['limit' => $limit]);
+        } catch (ConnectionException $e) {
+            Log::warning('Spotify-Verlauf nicht erreichbar.', ['message' => $e->getMessage()]);
+
+            return null;
+        }
+
+        if ($response->failed()) {
+            Log::warning('Spotify lieferte keinen Verlauf.', ['status' => $response->status()]);
+
+            return null;
+        }
+
+        return $response->json('items') ?? [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $entry
+     */
+    private function toPlayedTrack(array $entry): ?PlayedTrack
+    {
+        $item = $entry['track'] ?? null;
+
+        if (! is_array($item) || blank($item['name'] ?? null)) {
+            return null;
+        }
+
+        return new PlayedTrack(
+            title: (string) $item['name'],
+            artist: $this->performer($item, isPodcast: false),
+            artworkUrl: $item['album']['images'][1]['url'] ?? $item['album']['images'][0]['url'] ?? null,
+            url: $item['external_urls']['spotify'] ?? null,
+            playedAt: isset($entry['played_at'])
+                ? CarbonImmutable::parse($entry['played_at'])->setTimezone(config('app.timezone'))
+                : CarbonImmutable::now(config('app.timezone')),
+        );
+    }
+
     /** Wiedergabe auf ein anderes Gerät umlegen. */
     public function transferTo(string $deviceId, bool $keepPlaying = true): ControlResult
     {
@@ -348,8 +513,10 @@ final class SpotifyClient implements NowPlayingProvider
             return ControlResult::Failed;
         }
 
-        // Nach jedem Befehl ist der zwischengespeicherte Zustand überholt.
+        // Nach jedem Befehl ist der zwischengespeicherte Zustand überholt –
+        // ein Titelsprung landet sofort im Verlauf.
         $this->forget();
+        $this->forgetHistory();
 
         return match (true) {
             $response->successful() => ControlResult::Ok,
@@ -374,6 +541,11 @@ final class SpotifyClient implements NowPlayingProvider
     public function forget(): void
     {
         Cache::forget(self::CACHE_KEY);
+    }
+
+    public function forgetHistory(): void
+    {
+        Cache::forget(self::HISTORY_KEY);
     }
 
     // ------------------------------------------------------------------

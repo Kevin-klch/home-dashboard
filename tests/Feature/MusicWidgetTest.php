@@ -190,7 +190,12 @@ class MusicWidgetTest extends TestCase
         Livewire::test(Music::class, ['variant' => 'tile']);
         Livewire::test(Music::class, ['variant' => 'page']);
 
-        Http::assertSentCount(1);
+        // Der Verlauf ist ein eigener Endpunkt; gemeint ist die Wiedergabe.
+        $playbackCalls = collect(Http::recorded())
+            ->filter(fn ($pair) => str_contains($pair[0]->url(), '/me/player?'))
+            ->count();
+
+        $this->assertSame(1, $playbackCalls);
     }
 
     public function test_the_page_variant_shows_more_detail(): void
@@ -513,5 +518,314 @@ class MusicWidgetTest extends TestCase
 
         Http::assertNotSent(fn ($request) => $request->method() === 'PUT'
             && $request->url() === 'https://api.spotify.com/v1/me/player');
+    }
+
+    // ------------------------------------------------------------------
+    // Darstellung bei viel Platz
+    // ------------------------------------------------------------------
+
+    public function test_a_small_tile_stays_compact(): void
+    {
+        $this->connect();
+        Http::fake(['api.spotify.com/*' => Http::response($this->trackPayload())]);
+
+        Livewire::test(Music::class, ['cols' => 2, 'rows' => 1])
+            ->assertSeeHtml('data-stage="kompakt"');
+    }
+
+    public function test_a_wide_but_flat_tile_stays_compact(): void
+    {
+        // Genau der Fall, in dem ein großes Cover die Kachel sprengen würde.
+        $this->connect();
+        Http::fake(['api.spotify.com/*' => Http::response($this->trackPayload())]);
+
+        Livewire::test(Music::class, ['cols' => 4, 'rows' => 1])
+            ->assertSeeHtml('data-stage="kompakt"');
+    }
+
+    public function test_a_roomy_tile_gets_the_big_stage(): void
+    {
+        $this->connect();
+        Http::fake(['api.spotify.com/*' => Http::response($this->trackPayload())]);
+
+        Livewire::test(Music::class, ['cols' => 4, 'rows' => 2])
+            ->assertSeeHtml('data-stage="gross"');
+    }
+
+    public function test_a_tall_but_narrow_tile_stays_compact(): void
+    {
+        $this->connect();
+        Http::fake(['api.spotify.com/*' => Http::response($this->trackPayload())]);
+
+        Livewire::test(Music::class, ['cols' => 2, 'rows' => 3])
+            ->assertSeeHtml('data-stage="kompakt"');
+    }
+
+    public function test_the_cover_never_inflates_the_tile(): void
+    {
+        // Absolut positioniert: das Cover fuellt den Rest, traegt aber selbst
+        // nichts zur Hoehe bei. Sonst waechst die Rasterzeile mit dem Bild.
+        $this->connect();
+        Http::fake(['api.spotify.com/*' => Http::response($this->trackPayload())]);
+
+        $html = Livewire::test(Music::class, ['cols' => 4, 'rows' => 2])->html();
+
+        $this->assertMatchesRegularExpression('/<img[^>]*data-cover[^>]*class="[^"]*absolute/s', $html);
+    }
+
+    public function test_the_grid_size_cannot_be_pushed_beyond_the_grid(): void
+    {
+        $this->connect();
+        Http::fake(['api.spotify.com/*' => Http::response($this->trackPayload())]);
+
+        Livewire::test(Music::class, ['cols' => 99, 'rows' => 99])
+            ->assertSet('cols', 6)
+            ->assertSet('rows', 4);
+    }
+
+    public function test_the_artwork_also_serves_as_a_backdrop(): void
+    {
+        $this->connect();
+        Http::fake(['api.spotify.com/*' => Http::response($this->trackPayload())]);
+
+        $html = Livewire::test(Music::class)->html();
+
+        // Einmal als Cover, einmal weichgezeichnet als Hintergrund.
+        $this->assertSame(2, substr_count($html, 'https://i.scdn.co/image/gross'));
+        $this->assertStringContainsString('blur-3xl', $html);
+    }
+
+    public function test_there_is_no_backdrop_without_a_track(): void
+    {
+        $this->connect();
+        Http::fake(['api.spotify.com/*' => Http::response('', 204)]);
+
+        Livewire::test(Music::class)->assertDontSeeHtml('blur-3xl');
+    }
+
+    // ------------------------------------------------------------------
+    // Letzter Titel und Verlauf
+    // ------------------------------------------------------------------
+
+    public function test_the_last_track_stays_visible_during_silence(): void
+    {
+        // Genau der Fall nach einem Gerätewechsel: Spotify meldet kurz Stille.
+        $this->connect();
+
+        $silent = false;
+        Http::fake(function () use (&$silent) {
+            return $silent
+                ? Http::response('', 204)
+                : Http::response($this->trackPayload());
+        });
+
+        Livewire::test(Music::class)->assertSee('Blaue Stunde');
+
+        $silent = true;
+        // Im Test vergeht keine Zeit, der Wiedergabe-Cache muss also weg.
+        app(SpotifyClient::class)->forget();
+
+        Livewire::test(Music::class)
+            ->assertSeeHtml('data-state="pause"')
+            ->assertSee('Blaue Stunde')
+            ->assertSee('Zuletzt gespielt')
+            ->assertDontSee('Gerade läuft nichts');
+    }
+
+    public function test_without_any_history_it_still_says_nothing_is_playing(): void
+    {
+        $this->connect();
+        Http::fake(['api.spotify.com/*' => Http::response('', 204)]);
+
+        Livewire::test(Music::class)
+            ->assertSeeHtml('data-state="still"')
+            ->assertSee('Gerade läuft nichts');
+    }
+
+    public function test_the_page_lists_the_recently_played_tracks(): void
+    {
+        $this->connect();
+
+        Http::fake([
+            'api.spotify.com/v1/me/player/recently-played*' => Http::response([
+                'items' => [
+                    [
+                        'played_at' => now()->subMinutes(4)->toIso8601String(),
+                        'track' => [
+                            'name' => 'Nachtfahrt',
+                            'artists' => [['name' => 'Anna Beispiel']],
+                            'album' => ['images' => [['url' => 'https://i.scdn.co/image/a']]],
+                            'external_urls' => ['spotify' => 'https://open.spotify.com/track/a'],
+                        ],
+                    ],
+                    [
+                        'played_at' => now()->subHours(3)->toIso8601String(),
+                        'track' => [
+                            'name' => 'Morgenlicht',
+                            'artists' => [['name' => 'Ben Muster']],
+                            'album' => ['images' => [['url' => 'https://i.scdn.co/image/b']]],
+                        ],
+                    ],
+                ],
+            ]),
+            'api.spotify.com/*' => Http::response($this->trackPayload()),
+        ]);
+
+        $component = Livewire::test(Music::class, ['variant' => 'page']);
+
+        $component->assertSeeHtml('data-history')
+            ->assertSee('Zuletzt gehört')
+            ->assertSee('Nachtfahrt')
+            ->assertSee('Morgenlicht')
+            ->assertSee('vor 4 Min.');
+
+        $this->assertSame(2, substr_count($component->html(), 'data-played'));
+    }
+
+    public function test_the_tile_does_not_fetch_the_history(): void
+    {
+        // Auf der Kachel wäre kein Platz dafür – also gar nicht erst holen.
+        $this->connect();
+        Http::fake(['api.spotify.com/*' => Http::response($this->trackPayload())]);
+
+        Livewire::test(Music::class, ['variant' => 'tile']);
+
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), 'recently-played'));
+    }
+
+    public function test_the_history_needs_its_own_permission(): void
+    {
+        $this->connect(scope: SpotifyClient::SCOPES);
+        Http::fake(['api.spotify.com/*' => Http::response($this->trackPayload())]);
+
+        // Verbindung von vor der Verlaufs-Erweiterung.
+        $this->connect(scope: 'user-read-playback-state user-modify-playback-state');
+
+        Livewire::test(Music::class, ['variant' => 'page'])
+            ->assertSee('Für den Verlauf fehlt die Berechtigung');
+
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), 'recently-played'));
+    }
+
+    public function test_the_history_scope_is_requested_on_connect(): void
+    {
+        $this->assertStringContainsString('user-read-recently-played', SpotifyClient::SCOPES);
+    }
+
+    public function test_the_music_page_fills_the_screen_without_scrolling(): void
+    {
+        // Auf dem Wandtablet soll nichts gescrollt werden – nur der Verlauf.
+        $this->connect();
+        Http::fake(['api.spotify.com/*' => Http::response($this->trackPayload())]);
+
+        $html = $this->actingAs(\App\Models\User::factory()->create())
+            ->get(route('music'))
+            ->getContent();
+
+        $this->assertStringContainsString('overflow-hidden', $html);
+        $this->assertStringNotContainsString('min-h-full', $html);
+    }
+
+    public function test_the_history_column_scrolls_on_its_own(): void
+    {
+        $this->connect();
+        Http::fake([
+            'api.spotify.com/v1/me/player/recently-played*' => Http::response(['items' => []]),
+            'api.spotify.com/*' => Http::response($this->trackPayload()),
+        ]);
+
+        $html = Livewire::test(Music::class, ['variant' => 'page'])->html();
+
+        $this->assertMatchesRegularExpression('/<aside[^>]*data-history/s', $html);
+    }
+
+    public function test_it_always_fetches_the_maximum_and_shortens_locally(): void
+    {
+        // Ein Abruf, ein Cache-Schlüssel – so lässt er sich nach einem Befehl
+        // gezielt verwerfen, ohne die Länge zu kennen.
+        $this->connect();
+        Http::fake([
+            'api.spotify.com/v1/me/player/recently-played*' => Http::response(['items' => []]),
+            'api.spotify.com/*' => Http::response($this->trackPayload()),
+        ]);
+
+        Livewire::test(Music::class, ['variant' => 'page']);
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'recently-played')
+            && (int) $request['limit'] === 50);
+    }
+
+    public function test_it_returns_at_most_the_requested_number(): void
+    {
+        $this->connect();
+
+        $items = [];
+        for ($i = 0; $i < 40; $i++) {
+            $items[] = [
+                'played_at' => now()->subMinutes($i)->toIso8601String(),
+                'track' => [
+                    'name' => "Titel {$i}",
+                    'artists' => [['name' => 'Anna Beispiel']],
+                    'album' => ['images' => []],
+                ],
+            ];
+        }
+
+        Http::fake(['api.spotify.com/*' => Http::response(['items' => $items])]);
+
+        $this->assertCount(5, app(SpotifyClient::class)->recentlyPlayed(5));
+        $this->assertCount(30, app(SpotifyClient::class)->recentlyPlayed(30));
+    }
+
+    public function test_the_same_track_in_a_row_becomes_one_entry(): void
+    {
+        // Jedes Antippen von "weiter" hinterlaesst einen eigenen Eintrag.
+        $this->connect();
+
+        $repeat = fn (string $name, int $minutes) => [
+            'played_at' => now()->subMinutes($minutes)->toIso8601String(),
+            'track' => [
+                'name' => $name,
+                'artists' => [['name' => 'Wir sind Helden']],
+                'album' => ['images' => []],
+            ],
+        ];
+
+        Http::fake(['api.spotify.com/*' => Http::response(['items' => [
+            $repeat('Von hier an blind', 1),
+            $repeat('Von hier an blind', 2),
+            $repeat('Von hier an blind', 3),
+            $repeat('Nur ein Wort', 4),
+            $repeat('Von hier an blind', 5),
+        ]])]);
+
+        $history = app(SpotifyClient::class)->recentlyPlayed(30);
+
+        // Dreimal hintereinander wird eins; das spaetere Vorkommen bleibt.
+        $this->assertCount(3, $history);
+        $this->assertSame('Von hier an blind', $history[0]->title);
+        $this->assertSame('Nur ein Wort', $history[1]->title);
+        $this->assertSame('Von hier an blind', $history[2]->title);
+    }
+
+    public function test_a_command_refreshes_the_history(): void
+    {
+        // Sonst dauert es bis zu einer Minute, bis ein Sprung sichtbar wird.
+        $this->connect();
+        Http::fake([
+            'api.spotify.com/v1/me/player/recently-played*' => Http::response(['items' => []]),
+            'api.spotify.com/*' => Http::response($this->trackPayload()),
+        ]);
+
+        $spotify = app(SpotifyClient::class);
+        $spotify->recentlyPlayed(30);
+        $spotify->next();
+        $spotify->recentlyPlayed(30);
+
+        $calls = collect(Http::recorded())
+            ->filter(fn ($pair) => str_contains($pair[0]->url(), 'recently-played'))
+            ->count();
+
+        $this->assertSame(2, $calls);
     }
 }

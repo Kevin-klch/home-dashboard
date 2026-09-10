@@ -138,7 +138,14 @@ class Music extends Component
         return view($this->variantView('music'), [
             'playback' => $playback,
             'track' => $playback->track,
+            // Beim Gerätewechsel meldet Spotify kurz Stille – dann bleibt der
+            // zuletzt gespielte Titel stehen statt "gerade läuft nichts".
+            'last' => $playback->lastTrack,
             'canControl' => $spotify->canControl(),
+            'canSeeHistory' => $spotify->canSeeHistory(),
+            // Nur die Seite hat Platz für den Verlauf: rund 15 sind sichtbar,
+            // der Rest lässt sich in der Spalte scrollen.
+            'history' => $this->isPage() ? $spotify->recentlyPlayed(30) : null,
             // Nur nachfragen, wenn es überhaupt etwas zu holen gibt.
             'poll' => $playback->is(PlaybackStatus::NotConfigured) || $playback->is(PlaybackStatus::Disconnected)
                 ? null

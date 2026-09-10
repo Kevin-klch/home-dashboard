@@ -1,4 +1,4 @@
-<x-dashboard-layout>
+<x-dashboard-layout fills>
     <div class="flex min-h-0 flex-1 flex-col">
         <header class="mb-2 flex items-baseline justify-between">
             <h1 class="text-xl font-medium tracking-tight text-white">Musik</h1>

@@ -43,14 +43,14 @@
 
             <livewire:layout.sidenav />
 
-            <main class="relative flex-1 overflow-y-auto">
+            <main @class(['relative flex-1', 'overflow-hidden' => $fills, 'overflow-y-auto' => ! $fills])>
                 {{-- Dezenter Farbverlauf im Hintergrund, damit die Kacheln nicht auf Schwarz schweben --}}
                 <div class="pointer-events-none fixed inset-0 -z-10">
                     <div class="absolute -top-40 left-1/4 h-96 w-96 rounded-full bg-sky-500/10 blur-3xl"></div>
                     <div class="absolute -bottom-40 right-1/4 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl"></div>
                 </div>
 
-                <div class="flex min-h-full flex-col px-8 py-7">
+                <div @class(['flex flex-col px-8 py-7', 'h-full min-h-0' => $fills, 'min-h-full' => ! $fills])>
                     {{ $slot }}
                 </div>
             </main>

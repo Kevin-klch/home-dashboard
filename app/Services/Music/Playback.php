@@ -7,6 +7,13 @@ final readonly class Playback
     private function __construct(
         public PlaybackStatus $status,
         public ?NowPlaying $track = null,
+        /**
+         * Was zuletzt lief, wenn gerade nichts läuft.
+         *
+         * Beim Gerätewechsel meldet Spotify für einige Sekunden Stille –
+         * ohne das stünde dann "gerade läuft nichts" statt des Titels.
+         */
+        public ?NowPlaying $lastTrack = null,
     ) {}
 
     public static function notConfigured(): self
@@ -19,9 +26,9 @@ final readonly class Playback
         return new self(PlaybackStatus::Disconnected);
     }
 
-    public static function idle(): self
+    public static function idle(?NowPlaying $lastTrack = null): self
     {
-        return new self(PlaybackStatus::Idle);
+        return new self(PlaybackStatus::Idle, lastTrack: $lastTrack);
     }
 
     public static function unavailable(): self

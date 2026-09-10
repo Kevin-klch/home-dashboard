@@ -34,8 +34,58 @@
         </div>
     @else
 
-        {{-- Bühne: das Cover bekommt allen Platz, der übrig bleibt --}}
-        <div class="flex min-h-0 flex-1 items-center justify-center py-4">
+        <div class="flex min-h-0 flex-1 gap-6">
+
+            {{-- Verlauf --}}
+            <aside class="hidden w-64 shrink-0 flex-col xl:flex" data-history>
+                <p class="mb-3 flex items-baseline justify-between text-xs font-semibold tracking-widest text-slate-500 uppercase">
+                    Zuletzt gehört
+                    @if (is_array($history) && $history !== [])
+                        <span class="text-[0.65rem] font-normal normal-case">{{ count($history) }}</span>
+                    @endif
+                </p>
+
+                @if (! $canSeeHistory)
+                    <p class="text-xs text-slate-600">
+                        Für den Verlauf fehlt die Berechtigung –
+                        <a href="{{ route('spotify.connect') }}" class="underline underline-offset-2">Verbindung erneuern</a>.
+                    </p>
+                @elseif ($history === null)
+                    <p class="text-xs text-slate-600">Verlauf nicht abrufbar.</p>
+                @elseif ($history === [])
+                    <p class="text-xs text-slate-600">Noch nichts gehört.</p>
+                @else
+                    <ul class="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
+                        @foreach ($history as $entry)
+                            <li data-played>
+                                <a @if ($entry->url) href="{{ $entry->url }}" target="_blank" rel="noopener" @endif
+                                   class="flex items-center gap-2.5 rounded-lg px-1.5 py-1.5 transition hover:bg-white/5">
+                                    @if ($entry->artworkUrl)
+                                        <img src="{{ $entry->artworkUrl }}" alt=""
+                                             class="size-9 shrink-0 rounded object-cover">
+                                    @else
+                                        <span class="flex size-9 shrink-0 items-center justify-center rounded bg-white/5">
+                                            <x-dash.icon name="music" class="size-4 text-slate-600" />
+                                        </span>
+                                    @endif
+
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block truncate text-xs text-slate-200">{{ $entry->title }}</span>
+                                        <span class="block truncate text-[0.7rem] text-slate-500">{{ $entry->artist }}</span>
+                                    </span>
+
+                                    <span class="shrink-0 text-[0.65rem] whitespace-nowrap text-slate-600">
+                                        {{ $entry->whenLabel() }}
+                                    </span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </aside>
+
+            {{-- Bühne: das Cover bekommt allen Platz, der übrig bleibt --}}
+            <div class="flex min-h-0 flex-1 items-center justify-center py-4">
             @if ($playback->is(PlaybackStatus::Unavailable))
                 <div class="text-center" data-state="stoerung">
                     <x-dash.icon name="music" class="mx-auto size-12 text-slate-700" />
@@ -43,26 +93,48 @@
                     <p class="mt-1 text-sm text-slate-600">Wird automatisch erneut versucht.</p>
                 </div>
             @elseif ($playback->is(PlaybackStatus::Idle))
-                <div class="text-center" data-state="still">
-                    <x-dash.icon name="music" class="mx-auto size-12 text-slate-700" />
-                    <p class="mt-4 text-lg text-slate-300">Gerade läuft nichts</p>
-                    <p class="mt-1 text-sm text-slate-600">Starte etwas auf einem deiner Geräte.</p>
-                </div>
+                @if ($last)
+                    {{--
+                        Nach einem Gerätewechsel meldet Spotify für ein paar
+                        Sekunden Stille. Statt die Anzeige zu leeren, bleibt
+                        der letzte Titel stehen – nur gedämpft.
+                    --}}
+                    <div class="relative flex size-full flex-col items-center justify-center gap-4 opacity-50"
+                         data-state="pause" data-last>
+                        @if ($last->artworkUrl)
+                            <img src="{{ $last->artworkUrl }}" alt=""
+                                 class="min-h-0 max-h-full max-w-full flex-1 rounded-lg object-contain shadow-2xl shadow-black/70 grayscale">
+                        @endif
+
+                        <p class="shrink-0 text-xs tracking-widest text-slate-500 uppercase">Zuletzt gespielt</p>
+                    </div>
+                @else
+                    <div class="text-center" data-state="still">
+                        <x-dash.icon name="music" class="mx-auto size-12 text-slate-700" />
+                        <p class="mt-4 text-lg text-slate-300">Gerade läuft nichts</p>
+                        <p class="mt-1 text-sm text-slate-600">Starte etwas auf einem deiner Geräte.</p>
+                    </div>
+                @endif
             @else
-                <div class="relative" data-state="laeuft">
-                    {{-- Farbschimmer hinter dem Cover, wie in der Spotify-Vollbildansicht --}}
-                    <div class="absolute -inset-8 -z-10 rounded-full bg-white/5 blur-3xl"></div>
+                {{--
+                    Absolut positioniert: das Cover füllt den freien Platz,
+                    trägt aber selbst nichts zur Höhe bei. Sonst könnte es die
+                    Seite über den Bildschirm hinaus wachsen lassen.
+                --}}
+                <div class="relative size-full" data-state="laeuft">
+                    <div class="absolute inset-8 -z-10 rounded-full bg-white/5 blur-3xl"></div>
 
                     @if ($track->artworkUrl)
-                        <img src="{{ $track->artworkUrl }}" alt=""
-                             class="aspect-square w-[min(48vh,26rem)] rounded-lg object-cover shadow-2xl shadow-black/70">
+                        <img src="{{ $track->artworkUrl }}" alt="" data-cover
+                             class="absolute inset-0 m-auto max-h-full max-w-full rounded-lg object-contain shadow-2xl shadow-black/70">
                     @else
-                        <div class="flex aspect-square w-[min(48vh,26rem)] items-center justify-center rounded-lg bg-white/5">
+                        <div class="absolute inset-0 m-auto flex size-40 items-center justify-center rounded-lg bg-white/5">
                             <x-dash.icon name="music" class="size-20 text-slate-700" />
                         </div>
                     @endif
                 </div>
             @endif
+            </div>
         </div>
 
         {{-- Steuerleiste --}}
@@ -82,16 +154,18 @@
 
                 {{-- Links: Titel --}}
                 <div class="flex min-w-0 items-center gap-3">
-                    @if ($track?->artworkUrl)
-                        <img src="{{ $track->artworkUrl }}" alt=""
+                    @if (($track ?? $last)?->artworkUrl)
+                        <img src="{{ ($track ?? $last)->artworkUrl }}" alt=""
                              class="size-12 shrink-0 rounded object-cover">
                     @endif
 
+                    @php $shown = $track ?? $last; @endphp
+
                     <div class="min-w-0">
-                        <p class="truncate text-sm font-medium text-white">{{ $track?->title ?? '—' }}</p>
+                        <p class="truncate text-sm font-medium text-white">{{ $shown?->title ?? '—' }}</p>
                         <p class="truncate text-xs text-slate-400">
-                            {{ $track?->artist ?? 'Nichts ausgewählt' }}
-                            @if ($track?->album) · {{ $track->album }} @endif
+                            {{ $shown?->artist ?? 'Nichts ausgewählt' }}
+                            @if ($shown?->album) · {{ $shown->album }} @endif
                         </p>
                         @if ($track && ! $track->isPlaying)
                             <p class="text-[0.7rem] text-slate-600">Pausiert</p>
