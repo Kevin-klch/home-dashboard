@@ -14,6 +14,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('notizen', 'notizen')->name('notes');
     Route::view('kalender', 'kalender')->name('calendar');
     Route::view('aufgaben', 'aufgaben')->name('tasks');
+    Route::view('abfuhr', 'abfuhr')->name('waste');
+    Route::view('wlan', 'wlan')->name('wifi');
 
     // Weiterleitungs-URL im Spotify-Dashboard: http://127.0.0.1:8000/spotify/callback
     Route::get('spotify/verbinden', [SpotifyController::class, 'connect'])->name('spotify.connect');

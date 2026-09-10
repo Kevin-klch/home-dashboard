@@ -15,7 +15,7 @@ class DashboardTest extends TestCase
     {
         parent::setUp();
 
-        $this->fakeOpenMeteo();
+        $this->fakeDashboardSources();
     }
 
     public function test_guests_are_redirected_to_the_login_page(): void

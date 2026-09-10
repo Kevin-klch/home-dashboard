@@ -26,6 +26,8 @@ new class extends Component
         ['label' => 'Kalender',      'icon' => 'calendar', 'route' => 'calendar'],
         ['label' => 'Notizen',       'icon' => 'note',     'route' => 'notes'],
         ['label' => 'Musik',         'icon' => 'music',    'route' => 'music'],
+        ['label' => 'Abfuhr',        'icon' => 'trash',    'route' => 'waste'],
+        ['label' => 'WLAN',          'icon' => 'wifi',     'route' => 'wifi'],
     ];
 
     $comingSoon = [

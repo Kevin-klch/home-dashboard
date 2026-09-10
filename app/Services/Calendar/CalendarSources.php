@@ -25,6 +25,11 @@ final class CalendarSources
         return $this->make('birthdays');
     }
 
+    public function waste(): CalendarProvider
+    {
+        return $this->make('waste');
+    }
+
     private function make(string $key, ?int $daysAhead = null, ?int $maxEvents = null): CalendarProvider
     {
         $config = config("dashboard.{$key}");

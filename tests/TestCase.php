@@ -45,4 +45,46 @@ abstract class TestCase extends BaseTestCase
 
         Http::fake(['api.open-meteo.com/*' => Http::response($payload)]);
     }
+
+    /**
+     * Abfuhrkalender faken.
+     *
+     * Ganztägige Termine ohne DTEND – genau die Form, die der ENNI-Feed
+     * liefert.
+     *
+     * @param  array<string, string>  $collections  Datum (Ymd) => Abfallart
+     */
+    protected function fakeWaste(?array $collections = null): void
+    {
+        $collections ??= [
+            now()->addDays(2)->format('Ymd') => 'Restabfall',
+            now()->addDays(5)->format('Ymd') => 'Gelber Sack',
+        ];
+
+        $lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Test//EN'];
+
+        foreach ($collections as $date => $type) {
+            $lines = array_merge($lines, [
+                'BEGIN:VEVENT',
+                'UID:'.md5($date.$type).'@test',
+                'SUMMARY:Abholung '.$type,
+                'DTSTART;VALUE=DATE:'.$date,
+                'LOCATION:Teststraße',
+                'END:VEVENT',
+            ]);
+        }
+
+        $lines[] = 'END:VCALENDAR';
+        $lines[] = '';
+
+        Http::fake(['abfallkalender.enni.de/*' => Http::response(implode("
+", $lines))]);
+    }
+
+    /** Alles faken, was ein vollständiges Dashboard abruft. */
+    protected function fakeDashboardSources(): void
+    {
+        $this->fakeOpenMeteo();
+        $this->fakeWaste();
+    }
 }

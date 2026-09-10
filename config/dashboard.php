@@ -72,6 +72,24 @@ return [
         'poll_seconds' => (int) env('BIRTHDAYS_POLL_SECONDS', 3600),
     ],
 
+    'waste' => [
+
+        // ICS-Feed des Entsorgers. Für Moers liefert ENNI ihn pro Straße:
+        // https://abfallkalender.enni.de/ics-kalender/<strasse>
+        // Die Adresse verrät die Straße – sie gehört in die .env.
+        'ics_url' => env('WASTE_ICS_URL'),
+
+        'timezone' => env('WASTE_TIMEZONE', 'Europe/Berlin'),
+
+        // Der Feed reicht ohnehin nur wenige Monate; großzügig gewählt.
+        'days_ahead' => (int) env('WASTE_DAYS_AHEAD', 120),
+        'max_events' => (int) env('WASTE_MAX_EVENTS', 30),
+
+        // Abfuhrtermine ändern sich fast nie – einmal am halben Tag genügt.
+        'cache_seconds' => (int) env('WASTE_CACHE_SECONDS', 43200),
+        'poll_seconds' => (int) env('WASTE_POLL_SECONDS', 1800),
+    ],
+
     'music' => [
 
         // Wie oft die Anzeige nachfragt. Bei 10 Sekunden sind das drei

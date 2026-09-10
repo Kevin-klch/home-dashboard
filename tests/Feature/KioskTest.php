@@ -48,7 +48,7 @@ class KioskTest extends TestCase
 
     public function test_the_layout_offers_itself_as_a_home_screen_app(): void
     {
-        $this->fakeOpenMeteo();
+        $this->fakeDashboardSources();
 
         $html = $this->actingAs(User::factory()->create())->get(route('dashboard'))->getContent();
 

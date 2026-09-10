@@ -28,6 +28,7 @@ liegt im Repository.
 | `WEATHER_FORECAST_HOURS`, `WEATHER_VISIBLE_HOURS`, `WEATHER_FORECAST_DAYS` | Umfang der Wettervorhersage |
 | `CALENDAR_ICS_URL` | geheime iCal-Adresse des Termin-Kalenders |
 | `BIRTHDAYS_ICS_URL` | eigener Geburtstags-Kalender (nicht Googles Systemkalender) |
+| `WASTE_ICS_URL` | ICS-Feed des Abfallentsorgers |
 | `WIFI_SSID`, `WIFI_PASSWORD`, `WIFI_ENCRYPTION` | Inhalt des WLAN-QR-Codes |
 | `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` | aus dem Spotify Developer Dashboard |
 
@@ -41,6 +42,19 @@ ebenfalls.
 Für Geburtstage braucht es einen **eigenen, normalen Kalender**. Googles
 automatischer Kalender „Geburtstage" ist ein Systemkalender und hat keine
 iCal-Adresse.
+
+### Abfuhrkalender
+
+Viele Entsorger bieten ihren Kalender als ICS-Feed an. ENNI liefert ihn für
+Moers pro Straße:
+
+```
+https://abfallkalender.enni.de/ics-kalender/<strasse>
+```
+
+Die Abfallart wird aus dem Termintitel erkannt, Stichwörter statt exakter
+Gleichheit – andere Entsorger schreiben „Restmüll" statt „Abholung
+Restabfall".
 
 ### Spotify
 

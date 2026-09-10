@@ -25,13 +25,15 @@ class NavigationTest extends TestCase
             'Kalender' => ['calendar', 'Kalender'],
             'Notizen' => ['notes', 'Notizen'],
             'Musik' => ['music', 'Musik'],
+            'Abfuhr' => ['waste', 'Abfuhr'],
+            'WLAN' => ['wifi', 'WLAN'],
         ];
     }
 
     #[DataProvider('navigationItems')]
     public function test_every_navigation_item_has_a_working_page(string $route, string $heading): void
     {
-        $this->fakeOpenMeteo();
+        $this->fakeDashboardSources();
         $this->actingAs(User::factory()->create());
 
         $this->get(route($route))
@@ -47,7 +49,7 @@ class NavigationTest extends TestCase
 
     public function test_the_sidebar_links_to_every_page(): void
     {
-        $this->fakeOpenMeteo();
+        $this->fakeDashboardSources();
         $this->actingAs(User::factory()->create());
 
         $response = $this->get(route('dashboard'));
@@ -61,7 +63,7 @@ class NavigationTest extends TestCase
     #[DataProvider('navigationItems')]
     public function test_the_current_page_is_marked_in_the_sidebar(string $route): void
     {
-        $this->fakeOpenMeteo();
+        $this->fakeDashboardSources();
         $this->actingAs(User::factory()->create());
 
         $html = $this->get(route($route))->getContent();
@@ -72,7 +74,7 @@ class NavigationTest extends TestCase
 
     public function test_planned_sections_stay_unclickable(): void
     {
-        $this->fakeOpenMeteo();
+        $this->fakeDashboardSources();
         $this->actingAs(User::factory()->create());
 
         $html = $this->get(route('dashboard'))->getContent();
