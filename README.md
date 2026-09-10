@@ -31,6 +31,7 @@ liegt im Repository.
 | `WASTE_ICS_URL` | ICS-Feed des Abfallentsorgers |
 | `WIFI_SSID`, `WIFI_PASSWORD`, `WIFI_ENCRYPTION` | Inhalt des WLAN-QR-Codes |
 | `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` | aus dem Spotify Developer Dashboard |
+| `PIN_LENGTH`, `PIN_ATTEMPTS` | Stellen der Anmelde-PIN und Fehlversuche bis zur Sperre |
 
 ### Kalender
 
@@ -83,6 +84,11 @@ einfache `http`-Adresse im Heimnetz greift sie nicht.
 
 **Geführter Zugriff** (*Einstellungen → Bedienungshilfen*) sperrt das Tablet auf
 diese eine App, falls Gäste daran vorbeikommen.
+
+**Anmeldung per PIN.** Auf `/login` steht ein Ziffernblock; die achtstellige
+PIN legst du im Profil fest. Nach mehreren Fehlversuchen sperrt die Anmeldung
+für eine Minute. Der Weg über E-Mail und Passwort bleibt unter
+`/login/passwort` erreichbar – als Rückfallweg, falls die PIN vergessen wird.
 
 **Angemeldet bleiben.** Die Sitzung ist auf 30 Tage gesetzt und „Angemeldet
 bleiben" beim Login vorbelegt – damit steht morgens kein Anmeldebildschirm an

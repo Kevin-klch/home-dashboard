@@ -17,10 +17,10 @@ class KioskTest extends TestCase
     public function test_staying_signed_in_is_preselected(): void
     {
         // Ein Wandtablet soll sich nicht alle paar Stunden abmelden.
-        Volt::test('pages.auth.login')->assertSet('form.remember', true);
+        Volt::test('pages.auth.password-login')->assertSet('form.remember', true);
 
         // Der Haken muss auch sichtbar gesetzt sein, nicht nur im Zustand.
-        preg_match('/<input[^>]*id="remember"[^>]*>/', $this->get(route('login'))->getContent(), $input);
+        preg_match('/<input[^>]*id="remember"[^>]*>/', $this->get(route('login.password'))->getContent(), $input);
 
         $this->assertNotEmpty($input, 'Das Feld "Angemeldet bleiben" fehlt.');
         $this->assertStringContainsString('checked', $input[0]);
@@ -30,7 +30,7 @@ class KioskTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Volt::test('pages.auth.login')
+        Volt::test('pages.auth.password-login')
             ->set('form.email', $user->email)
             ->set('form.password', 'password')
             ->call('login');

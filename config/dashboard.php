@@ -12,6 +12,15 @@ return [
     |
     */
 
+    'security' => [
+
+        // Stellen der PIN fürs Wandtablet.
+        'pin_length' => (int) env('PIN_LENGTH', 8),
+
+        // Fehlversuche, bevor gesperrt wird.
+        'pin_attempts' => (int) env('PIN_ATTEMPTS', 5),
+    ],
+
     'weather' => [
 
         // Open-Meteo braucht keinen API-Key. Kostenlos für nicht-kommerzielle

@@ -17,14 +17,18 @@ class AuthenticationTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSeeVolt('pages.auth.login');
+            ->assertSeeVolt('pages.auth.login');   // PIN-Feld
+
+        $this->get(route('login.password'))
+            ->assertOk()
+            ->assertSeeVolt('pages.auth.password-login');
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
         $user = User::factory()->create();
 
-        $component = Volt::test('pages.auth.login')
+        $component = Volt::test('pages.auth.password-login')
             ->set('form.email', $user->email)
             ->set('form.password', 'password');
 
@@ -41,7 +45,7 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $component = Volt::test('pages.auth.login')
+        $component = Volt::test('pages.auth.password-login')
             ->set('form.email', $user->email)
             ->set('form.password', 'wrong-password');
 

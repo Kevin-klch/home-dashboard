@@ -11,6 +11,11 @@ Route::middleware('guest')->group(function () {
     Volt::route('login', 'pages.auth.login')
         ->name('login');
 
+    // Rückfallweg: Anmeldung per E-Mail und Passwort, etwa um die erste PIN
+    // einzurichten oder wenn sie vergessen wurde.
+    Volt::route('login/passwort', 'pages.auth.password-login')
+        ->name('login.password');
+
     Volt::route('forgot-password', 'pages.auth.forgot-password')
         ->name('password.request');
 
