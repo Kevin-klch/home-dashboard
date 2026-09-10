@@ -72,6 +72,19 @@ Sitzungs-Cookie nicht zur Rückleitung.
 
 Steuerung und Gerätewechsel setzen Spotify Premium voraus.
 
+## Kacheln anordnen
+
+Der Knopf oben rechts im Raster schaltet den Bearbeitungsmodus ein. Dort lässt
+sich jede Kachel verschieben, in Breite und Höhe verstellen und entfernen;
+darunter stehen die noch nicht platzierten Kacheln zum Hinzufügen. Breite zählt
+in Spalten des Sechser-Rasters, Höhe in Rasterzeilen. Die Anordnung liegt in der
+Tabelle `dashboard_widgets` und gilt für das Gerät, nicht pro Person.
+
+Eine **neue Kachel** bekannt zu machen heißt: einen Eintrag in
+`app/Dashboard/WidgetRegistry.php` ergänzen. Dort stehen Beschriftung, Symbol,
+Komponente, erlaubte Breiten und Höhen und ob sie zur Standardanordnung gehört.
+Das Raster selbst muss nicht angefasst werden.
+
 ## Dauerbetrieb auf dem iPad
 
 **Zum Homescreen hinzufügen.** In Safari über *Teilen → Zum Home-Bildschirm*.
